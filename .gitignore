@@ -1,7 +1,3 @@
-**/output_files
-**/simulation
-**/incremental_db
-**/db
 
 # A gitignore for Altera Quartus II that tries to ignore almost all of the
 # automatically Quartus-generated files. This primarily leaves the project,
