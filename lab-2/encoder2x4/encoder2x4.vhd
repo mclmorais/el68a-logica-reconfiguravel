@@ -17,12 +17,6 @@ begin
                     "01" when signalInput = "0010" else
                     "10" when signalInput = "0100" else
                     "11" when signalInput = "1000" else
-                    "00";
-                    
-    -- binaryOutput <= std_logic_array(to_integer(decoderInput)) when to_integer(decoderInput) < 4 
-    --                 else
-    --                 "0000";
-
-    
+                    "00";    
     
 end architecture aEncoder2x4;
