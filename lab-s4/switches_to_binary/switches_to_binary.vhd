@@ -8,7 +8,7 @@ entity switches_to_binary is
     outputs : out unsigned(9 downto 0);
     display_outputs : out std_logic_vector(6 downto 0)
   );
-end entity switches_to_binary; 
+end entity switches_to_binary;
 
 architecture a_switches_to_binary of switches_to_binary is
   type int_array is array(0 to 9) of integer;
@@ -18,7 +18,7 @@ begin
     integral(0) <= 1 when inputs(0) = '1' else 0;
     for_gen: for i in 1 to 9 generate
       integral(i) <= integral(i-1) + 1 when inputs(i) = '1' else integral(i-1);
-    end generate;  
+    end generate;
   outputs <= to_unsigned(integral(9), 10);
 
   display_outputs <= "1111110" when integral(9) = 0 else
@@ -32,9 +32,6 @@ begin
                      "1111111" when integral(9) = 8 else
                      "1110011" when integral(9) = 9 else
                      "1110111" when integral(9) = 10 else
-							"0000000";
+                     "0000000";
 
-
-
-  
 end architecture a_switches_to_binary;
