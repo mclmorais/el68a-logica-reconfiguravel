@@ -1,0 +1,32 @@
+|parity_detector
+input[0] => xor_array[0].IN0
+input[0] => output[0].DATAIN
+input[1] => xor_array[0].IN1
+input[1] => output[1].DATAIN
+input[2] => xor_array[1].IN1
+input[2] => output[2].DATAIN
+input[3] => xor_array[2].IN1
+input[3] => output[3].DATAIN
+input[4] => xor_array[3].IN1
+input[4] => output[4].DATAIN
+input[5] => xor_array[4].IN1
+input[5] => output[5].DATAIN
+input[6] => xor_array[5].IN1
+input[6] => output[6].DATAIN
+input[7] => xor_array[6].IN1
+input[7] => output[7].DATAIN
+input[8] => xor_array[7].IN1
+input[8] => output[8].DATAIN
+output[0] <= input[0].DB_MAX_OUTPUT_PORT_TYPE
+output[1] <= input[1].DB_MAX_OUTPUT_PORT_TYPE
+output[2] <= input[2].DB_MAX_OUTPUT_PORT_TYPE
+output[3] <= input[3].DB_MAX_OUTPUT_PORT_TYPE
+output[4] <= input[4].DB_MAX_OUTPUT_PORT_TYPE
+output[5] <= input[5].DB_MAX_OUTPUT_PORT_TYPE
+output[6] <= input[6].DB_MAX_OUTPUT_PORT_TYPE
+output[7] <= input[7].DB_MAX_OUTPUT_PORT_TYPE
+output[8] <= input[8].DB_MAX_OUTPUT_PORT_TYPE
+output[9] <= bit_parity.DB_MAX_OUTPUT_PORT_TYPE
+sel_even => bit_parity.IN1
+
+
