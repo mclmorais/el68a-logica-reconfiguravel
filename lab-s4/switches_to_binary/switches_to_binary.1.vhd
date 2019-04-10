@@ -14,7 +14,7 @@ architecture a_switches_to_binary of switches_to_binary is
   type int_array is array(0 to 9) of integer;
   signal integral : int_array;
   signal s_outputs : unsigned(9 downto 0);
-begin 
+begin
     integral(0) <= 1 when inputs(0) = '1' else 0;
     for_gen: for i in 1 to 9 generate
       integral(i) <= integral(i-1) + 1 when inputs(i) = '1' else integral(i-1);
