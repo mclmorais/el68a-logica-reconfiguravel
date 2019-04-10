@@ -21,17 +21,17 @@ begin
     end generate;
   outputs <= to_unsigned(integral(9), 10);
 
-  display_outputs <= "1111110" when integral(9) = 0 else
-                     "0110000" when integral(9) = 1 else
-                     "1101101" when integral(9) = 2 else
-                     "1111001" when integral(9) = 3 else
-                     "0110011" when integral(9) = 4 else
-                     "1011011" when integral(9) = 5 else
-                     "1011111" when integral(9) = 6 else
-                     "1110000" when integral(9) = 7 else
-                     "1111111" when integral(9) = 8 else
-                     "1110011" when integral(9) = 9 else
-                     "1110111" when integral(9) = 10 else
+  display_outputs <= "1000000" when integral(9) = 0 else
+                     "1111001" when integral(9) = 1 else
+                     "0100100" when integral(9) = 2 else
+                     "0110000" when integral(9) = 3 else
+                     "0011001" when integral(9) = 4 else
+                     "0010010" when integral(9) = 5 else
+                     "0000010" when integral(9) = 6 else
+                     "1111000" when integral(9) = 7 else
+                     "0000000" when integral(9) = 8 else
+                     "0010000" when integral(9) = 9 else
+                     "0001000" when integral(9) = 10 else
                      "0000000";
 
 end architecture a_switches_to_binary;
