@@ -54,27 +54,27 @@ architecture a_two_multiplier of two_multiplier is
     signal result       : integer;
 
 begin 
-    --Conta número de switches ligados
+    --Conta numero de switches ligados
     switch_adder(0) <= 1 when switch_inputs(0) = '1' else 0;
     for_gen: for i in 1 to NSwitch-1 generate
     switch_adder(i) <= switch_adder(i-1) + 1 when switch_inputs(i) = '1' else switch_adder(i-1);
     end generate;
 
-    --Conta número de botões ligados
+    --Conta numero de botoes ligados
     button_adder(0) <= 1 when button_inputs(0) = '1' else 0;
     button_add: for i in 1 to NButton-1 generate
     button_adder(i) <= button_adder(i-1) + 1 when button_inputs(i) = '1' else button_adder(i-1);
     end generate;
   
-    --Resultado: Chaves * 2^Botões
+    --Resultado: Chaves * 2^Botoes
     result <= switch_adder(NSwitch-1) * (2 ** button_adder(NButton-1));
 
-    --Mostra resultado em binário nos LEDs
+    --Mostra resultado em binario nos LEDs
     led_outputs <= to_unsigned(result, 10);
 
     --Mostra resultado em hexadecimal nos displays 7 segmentos
     display_outputs(0) <= seven_seg_numbers(result mod 16);
-    seg_gen: for i in 1 to N7Seg generate
+    seg_gen: for i in 1 to N7Seg-1 generate
         display_outputs(i) <= seven_seg_numbers(result / (16 * i) mod 16);
     end generate;
 
