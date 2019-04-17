@@ -47,23 +47,22 @@ entity contcorrencias is
 end entity contcorrencias;
 -----------------------------------------------------------
 architecture a_contcorrencias of contcorrencias is
-  type int_array is array(0 to N-1) of integer;
+  type int_array is array(0 to N-P) of integer;
   signal adder : int_array; 
   --signal detected : std_logic_vector(0 to N-1);
   constant padrao : std_logic_vector(0 to P-1) := valorpadrao;
 begin
 
-  adder(0) <= 0;
-  --detected(0) <= '0';
+  adder(0) <= 1 when padrao = vetorbusca(0 to P-1) else 0;
 		
   adder_for: for i in 1 to N-P generate
   adder(i) <= adder(i-1)+1 when padrao = vetorbusca(i to i+P-1) else
 				  adder(i-1);
   end generate;
 		-- Mostra resultado no display 7 segmentos
-		display_outputs(0) <= seven_seg_numbers(adder(N-1) mod 10);
+		display_outputs(0) <= seven_seg_numbers(adder(N-P) mod 10);
 		seg_gen: for i in 1 to N7Seg-1 generate
-      display_outputs(i) <= seven_seg_numbers(adder(N-1) / (10 * i) mod 10);
+      display_outputs(i) <= seven_seg_numbers(adder(N-P) / (10 * i) mod 10);
     end generate;
 end architecture;
 -----------------------------------------------------------
