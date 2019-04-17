@@ -30,6 +30,8 @@ use work.seven_segment_types.all;
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
+use IEEE.math_real.all;
+
 
 
 entity two_multiplier is
@@ -37,13 +39,13 @@ entity two_multiplier is
         NSwitch : integer := 10;
         NLeds   : integer := 10;
         NButton : integer := 3;
-        N7Seg : integer := 4
     );
     port (
     switch_inputs   : in std_logic_vector(NSwitch-1 downto 0);
     button_inputs   : in std_logic_vector(NButton-1 downto 0);
     led_outputs     : out unsigned(NLeds-1 downto 0);
-    display_outputs : out seven_segment_output(3 downto 0)
+	 -- (log2((2 ** NButton)
+    display_outputs : out seven_segment_output(integer(floor(log2(real(NSwitch * (2 ** NButton)))/log2(real(16)))) downto 0)
     );
 end entity two_multiplier;
 
@@ -74,7 +76,7 @@ begin
 
     --Mostra resultado em hexadecimal nos displays 7 segmentos
     display_outputs(0) <= seven_seg_numbers(result mod 16);
-    seg_gen: for i in 1 to N7Seg-1 generate
+    seg_gen: for i in 1 to integer(floor(log2(real(NSwitch * (2 ** NButton)))/log2(real(16)))) generate
         display_outputs(i) <= seven_seg_numbers(result / (16 * i) mod 16);
     end generate;
 
