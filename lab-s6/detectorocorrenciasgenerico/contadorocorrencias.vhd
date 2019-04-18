@@ -31,25 +31,25 @@ use work.seven_segment_types.all;
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
+use IEEE.math_real.all;
+
 -----------------------------------------------------------
-entity detecocorrencias is
+entity contcorrencias is
   generic(
-		N     : integer := 7;
+		N     : integer := 10;
 		P     : integer := 3;
-		N7Seg : integer := 4;
 		valorpadrao: std_logic_vector := "101"
   );
   port (
     vetorbusca      : in std_logic_vector(0 to N-1);
-	 display_outputs : out seven_segment_output(N7Seg-1 downto 0) 
-	 ocorrencia     : out std_logic
+	  display_outputs : out seven_segment_output(integer(floor(log2(real(N-P+1))/log2(real(10)))) downto 0);
+	  led_outputs     : out std_logic_vector(N-P downto 0)
   );
-end entity detecocorrencias;
+end entity contcorrencias;
 -----------------------------------------------------------
-architecture a_detecocorrencias of detecocorrencias is
+architecture a_contcorrencias of contcorrencias is
   type int_array is array(0 to N-P) of integer;
   signal adder : int_array; 
-  --signal detected : std_logic_vector(0 to N-1);
   constant padrao : std_logic_vector(0 to P-1) := valorpadrao;
 begin
 
@@ -60,11 +60,14 @@ begin
 				  adder(i-1);
   end generate;
 		-- Mostra resultado no display 7 segmentos
-		display_outputs(0) <= seven_seg_numbers(adder(N-P) mod 10);
-		seg_gen: for i in 1 to N7Seg-1 generate
-      display_outputs(i) <= seven_seg_numbers(adder(N-P) / (10 * i) mod 10);
-    end generate;
+  display_outputs(0) <= seven_seg_numbers(adder(N-P) mod 10);
+  seg_gen: for i in 1 to integer(floor(log2(real(N-P+1))/log2(real(10)))) generate
+    display_outputs(i) <= seven_seg_numbers(adder(N-P) / (10 * i) mod 10);
+  end generate;
 
-  ocorrencia <= '1' when adder(N-P) > 0 else '0';
+  out_gen: for i in 0 to N-P generate
+    led_outputs(i) <= '1' when adder(N-P) > i else '0';
+  end generate;
+
 end architecture;
 -----------------------------------------------------------
