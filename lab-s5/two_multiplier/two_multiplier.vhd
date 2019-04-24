@@ -38,7 +38,7 @@ entity two_multiplier is
     generic(
         NSwitch : integer := 10;
         NLeds   : integer := 10;
-        NButton : integer := 3;
+        NButton : integer := 3
     );
     port (
     switch_inputs   : in std_logic_vector(NSwitch-1 downto 0);
@@ -63,9 +63,9 @@ begin
     end generate;
 
     --Conta numero de botoes ligados
-    button_adder(0) <= 1 when button_inputs(0) = '1' else 0;
+    button_adder(0) <= 1 when button_inputs(0) = '0' else 0;
     button_add: for i in 1 to NButton-1 generate
-    button_adder(i) <= button_adder(i-1) + 1 when button_inputs(i) = '1' else button_adder(i-1);
+    button_adder(i) <= button_adder(i-1) + 1 when button_inputs(i) = '0' else button_adder(i-1);
     end generate;
   
     --Resultado: Chaves * 2^Botoes
