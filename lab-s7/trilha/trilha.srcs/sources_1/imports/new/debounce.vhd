@@ -32,18 +32,21 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity debounce is
-  generic( n_inputs: integer := 8;
-           debounce_ms: integer := 1000;
-           clock_value: integer := 100000000);
-  Port ( clk: in std_logic;
-         button_in: in std_logic_vector(0 to n_inputs-1);
-         pulse_out: out std_logic_vector(0 to n_inputs-1));
+    generic( n_inputs: integer := 1;
+             debounce_ms: integer := 100;
+             clock_value: integer := 100000000
+    );
+
+    Port ( clk: in std_logic;
+           button_in: in std_logic_vector(0 to n_inputs-1);
+           pulse_out: out std_logic_vector(0 to n_inputs-1)
+    );
 end debounce;
 
 architecture arc_debounce of debounce is
 type INT_ARRAY  is array (integer range <>) of integer;
-signal count_array: INT_ARRAY(0 to n_inputs);
-
+signal count_array: INT_ARRAY(0 to n_inputs-1);
+signal input_buffer: std_logic_vector(0 to n_inputs-1);
 begin
 process(clk)
     begin
