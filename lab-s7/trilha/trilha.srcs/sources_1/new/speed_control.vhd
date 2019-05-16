@@ -63,7 +63,7 @@ begin
     for I in 0 to n_inputs-1 generate
         DBX : debounce 
         port map (  clk => clk, 
-                    button_in(0)=>btn_speed_in(I),
+                    button_in(0)=>speed_buttons(I),
                     pulse_out(0)=>btn_speed_out(I)
         );
     end generate GEN_DB;

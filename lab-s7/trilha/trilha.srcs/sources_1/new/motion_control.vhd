@@ -42,7 +42,7 @@ entity motion_control is
 end motion_control;
 
 architecture arc_motion_control of motion_control is
-    signal clockwise_s_in, clockwise_s_out : std_logic;
+    signal clockwise_s_out : std_logic;
     signal output_buffer : std_logic_vector(0 to (2*output_size)-1);
     --signal output_leds_s : std_logic_vector(0 to output_size-1);
     
@@ -59,7 +59,7 @@ architecture arc_motion_control of motion_control is
 begin
     btn_debounce: component debounce
     port map(
-        button_in(0)=>clockwise_s_in,
+        button_in(0)=>clockwise_in,
         pulse_out(0)=>clockwise_s_out,
         clk=>clk
     );
