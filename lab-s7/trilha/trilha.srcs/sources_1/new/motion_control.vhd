@@ -1,86 +1,52 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 15.05.2019 18:40:16
--- Design Name: 
--- Module Name: motion_control - arc_motion_control
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
-
 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
 
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
-use IEEE.NUMERIC_STD.ALL;
 
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
-entity motion_control is
-    generic(output_size: integer := 8);
-    Port (move_in : in std_logic;
-          clk : in std_logic;
-          clockwise_in : in std_logic;
-          input_vector: in std_logic_vector(0 to output_size-1);
-          output_leds:  out std_logic_vector(0 to output_size-1)
+entity led_movement is
+    generic(
+        CLOCK_VALUE         : integer := 50000000;
+        MOVEMENT_PERIOD     : integer := 200;
+	    N              		 : integer := 10
     );
-end motion_control;
+    port (
+        clk                 : in    std_logic;
+        led_outputs         : out   std_logic_vector(N-1 downto 0)
+    );
 
-architecture arc_motion_control of motion_control is
-    signal clockwise_s_out : std_logic;
-    signal output_buffer : std_logic_vector(0 to (2*output_size)-1);
-    --signal output_leds_s : std_logic_vector(0 to output_size-1);
-    
-    component debounce is
-        generic( n_inputs: integer := 1;
-                 debounce_ms: integer := 100;
-                 clock_value: integer := 100000000
-        );
-        port( clk: in std_logic;
-              button_in: in std_logic_vector(0 to n_inputs-1);
-              pulse_out: out std_logic_vector(0 to n_inputs-1)
-        );
-      end component debounce;
+end entity led_movement;
+
+
+architecture a_led_movement of led_movement is
+  
 begin
-    btn_debounce: component debounce
-    port map(
-        button_in(0)=>clockwise_in,
-        pulse_out(0)=>clockwise_s_out,
-        clk=>clk
-    );
-process(move_in)
-    variable motion_counter: integer := 0;
-
+  
+    process(clk)
+        variable L              : integer := 5;
+        variable initial_setup  : boolean := true;
+        variable count          : integer := 0;
+        variable h              : integer := L - 1;
+        constant period_cycles  : integer := MOVEMENT_PERIOD * ((CLOCK_VALUE / 1000));
     begin
-    if(rising_edge(move_in)) then
-        output_buffer <= input_vector & input_vector;
-        for I in 0 to (output_size-1) loop
-            if(clockwise_s_out = '1') then
-                output_leds(I) <= output_buffer(motion_counter + I); 
-            else
-                output_leds(I) <= output_buffer((output_size - motion_counter) + I);  
-            end if;
-        end loop;
-        motion_counter := (motion_counter + 1);
-        if( motion_counter >= output_size) then 
-            motion_counter := 0;
-        end if;
-    end if;
-    end process ; -- identifier
+        if rising_edge(clk) then
 
-end arc_motion_control;
+            -- Sets up initial LEDs' position
+            if initial_setup then
+                led_outputs <= std_logic_vector(to_unsigned(( (2 ** L) - 1 ), N));
+                initial_setup := false;
+            end if;
+
+            -- Updates LEDs' position
+            count := count + 1;
+            if count > period_cycles then
+                led_outputs((h + 1) mod N) <= '1';
+                led_outputs((h - L + 1) mod N) <= '0';
+                h := (h + 1) mod N;
+                count := 0;
+            end if;
+
+        end if;
+    end process;
+  
+  
+end architecture a_led_movement;
