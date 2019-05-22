@@ -3,16 +3,23 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 
+library work;
+use work.seven_seg_pkg.all;
+
 entity button_inc_dec is
+  generic(
+    N7seg : integer := 4
+  );
   port (
     button_inc : in  std_logic;
     button_dec : in  std_logic;
-    clk        : in  std_logic
+    clk        : in  std_logic;
+    display_out : out seven_segment_output(N7seg-1 downto 0)
   );
 end entity button_inc_dec;
 
 architecture a_button_inc_dec of button_inc_dec is
-  signal count : integer;
+  signal count : integer := 0;
 
   signal debounced_inc : std_logic;
   signal debounced_dec : std_logic;
@@ -20,7 +27,7 @@ architecture a_button_inc_dec of button_inc_dec is
   component debounce is
       generic( n_inputs: integer := 2;
                 debounce_ms: integer := 100;
-                clock_value: integer := 100000000
+                clock_value: integer := 50000000
       );
       port( clk: in std_logic;
             button_in: in std_logic_vector(0 to n_inputs-1);
@@ -53,9 +60,18 @@ begin
         else
           already_pressed := '0';
         end if; 
+      else
+        if debounced_inc = '1' and debounced_dec = '1' then
+          already_pressed := '0';
+        end if;
       end if;
     end if;
   end process;
+
+   display_out(0) <= seven_seg_numbers(count mod 10);
+  seg_gen: for i in 1 to N7seg-1 generate
+      display_out(i) <= seven_seg_numbers((count / (10 ** i)) mod 10);
+  end generate;
   
   
 end architecture a_button_inc_dec;
