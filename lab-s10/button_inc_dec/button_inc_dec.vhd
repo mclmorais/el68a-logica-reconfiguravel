@@ -7,22 +7,23 @@ library work;
 use work.seven_seg_pkg.all;
 
 entity button_inc_dec is
-  generic(
-    N7seg : integer := 4
-  );
-  port (
-    button_inc : in  std_logic;
-    button_dec : in  std_logic;
-    clk        : in  std_logic;
-    display_out : out seven_segment_output(N7seg-1 downto 0)
-  );
+    generic(
+        N7seg : integer := 4
+    );
+    port (
+        button_inc : in  std_logic;
+        button_dec : in  std_logic;
+        clk        : in  std_logic;
+        display_out : out seven_segment_output(N7seg-1 downto 0)
+    );
 end entity button_inc_dec;
 
 architecture a_button_inc_dec of button_inc_dec is
-  signal count : integer := 0;
+    type count_number is array(N7seg-1 downto 0) of integer range 0 to 10;
+    signal count : count_number;
 
-  signal debounced_inc : std_logic;
-  signal debounced_dec : std_logic;
+    signal debounced_inc : std_logic;
+    signal debounced_dec : std_logic;
 
   component debounce is
       generic( n_inputs: integer := 2;
@@ -37,41 +38,91 @@ architecture a_button_inc_dec of button_inc_dec is
 
 begin
 
-  middleware_debounce : component debounce
-  port map (
-	 clk => clk,
-    button_in(0) => button_inc,
-    pulse_out(0) => debounced_inc,
-    button_in(1) => button_dec,
-    pulse_out(1) => debounced_dec
-  );  
+    middleware_debounce : component debounce
+    port map (
+        clk => clk,
+        button_in(0) => button_inc,
+        pulse_out(0) => debounced_inc,
+        button_in(1) => button_dec,
+        pulse_out(1) => debounced_dec
+    );  
 
-  process(clk)
-    variable already_pressed : std_logic;
-  begin
+    process(clk)
+        variable startup : boolean := true;
+        variable already_pressed : std_logic;
+        variable increase, decrease : boolean := false;
+        variable counter : count_number;
+    begin
     if rising_edge(clk) then
-      if already_pressed = '0' then
-        if debounced_inc = '0' then
-          count <= count + 1;
-          already_pressed := '1';
-        elsif debounced_dec = '0' then
-          count <= count - 1;
-          already_pressed := '1';
-        else
-          already_pressed := '0';
-        end if; 
-      else
-        if debounced_inc = '1' and debounced_dec = '1' then
-          already_pressed := '0';
-        end if;
-      end if;
-    end if;
-  end process;
+        if startup then
+            for i in 0 to N7seg - 1 loop
+                counter(i) := 0;
+            end loop;
 
-   display_out(0) <= seven_seg_numbers(count mod 10);
-  seg_gen: for i in 1 to N7seg-1 generate
-      display_out(i) <= seven_seg_numbers((count / (10 ** i)) mod 10);
-  end generate;
-  
-  
+            startup := false;
+        end if;
+
+        -- Sets increase/decrease flag depending on button press
+        if already_pressed = '0' then
+            if debounced_inc = '0' then
+                increase := true;
+                already_pressed := '1';
+            elsif debounced_dec = '0' then
+                decrease := true;
+                already_pressed := '1';
+            else
+                already_pressed := '0';
+            end if; 
+        else
+            if debounced_inc = '1' and debounced_dec = '1' then
+                already_pressed := '0';
+            end if;
+        end if;
+    
+        -- Increases counter numbers if flag was set
+        if increase then
+            increase := false;
+            counter(0) := counter(0) + 1;
+
+            for i in 0 to N7seg - 2 loop
+                if counter(i) > 9 then
+                    counter(i + 1) := counter(i + 1) + 1;
+                    counter(i) := 0;
+                end if;
+            end loop;
+
+            if counter(N7seg - 1) > 9 then
+                for i in 0 to N7seg - 1 loop
+                    counter(i) := 0;
+                end loop;
+            end if;
+        end if;
+        
+        if decrease then
+            decrease := false;
+            counter(0) := counter(0) - 1;
+
+            for i in 0 to N7seg - 2 loop
+                if counter(i) > 9 then
+                    counter(i + 1) := counter(i + 1) - 1;
+                    counter(i) := 9;
+                end if;
+            end loop;
+
+            if counter(N7seg - 1) > 9 then
+                for i in 0 to N7seg - 1 loop
+                    counter(i) := 9;
+                end loop;
+            end if;
+        end if;
+
+    count <= counter;
+    end if;
+
+    end process;
+
+    seg_gen : for i in 0 to N7Seg - 1 generate
+        display_out(i) <= seven_seg_numbers(count(i));
+    end generate seg_gen;
+    
 end architecture a_button_inc_dec;
