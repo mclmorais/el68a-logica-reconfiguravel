@@ -47,50 +47,32 @@ begin
     );  
 
     process(clk)
-        variable startup : boolean := true;
-        variable already_pressed : std_logic;
+        variable already_pressed : boolean := true;
         variable increase, decrease : boolean := false;
-        variable counter : count_number(N7Seg - 1 downto 0);
+        variable counter : count_number(N7Seg - 1 downto 0) := (others => 0);
     begin
     if rising_edge(clk) then
-        if startup then
-            for i in 0 to N7seg - 1 loop
-                counter(i) := 0;
-            end loop;
-
-            startup := false;
-        end if;
 
         -- Sets increase/decrease flag depending on button press
-        if already_pressed = '0' then
+        if not already_pressed then
             if debounced_inc = '0' then
-                increase := true;
-                already_pressed := '1';
+                ChangeValue(true, counter);
+                already_pressed := true;
             elsif debounced_dec = '0' then
-                decrease := true;
-                already_pressed := '1';
+                ChangeValue(false, counter);
+                already_pressed := true;
             else
-                already_pressed := '0';
+                already_pressed := false;
             end if; 
         else
             if debounced_inc = '1' and debounced_dec = '1' then
-                already_pressed := '0';
+                already_pressed := false;
             end if;
         end if;
-    
-
-        if increase then 
-            increase := false;
-            ChangeValue(true, counter);
-        elsif decrease then
-            decrease := false;
-            ChangeValue(false, counter);
-        end if;
 
 
-    count <= counter;
+        count <= counter;
     end if;
-
     end process;
 
     seg_gen : for i in 0 to N7Seg - 1 generate
