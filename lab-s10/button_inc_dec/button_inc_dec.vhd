@@ -19,7 +19,6 @@ entity button_inc_dec is
 end entity button_inc_dec;
 
 architecture a_button_inc_dec of button_inc_dec is
-    type count_number is array(N7seg-1 downto 0) of integer range 0 to 10;
     signal count : count_number;
 
     signal debounced_inc : std_logic;
@@ -52,47 +51,6 @@ begin
         variable already_pressed : std_logic;
         variable increase, decrease : boolean := false;
         variable counter : count_number;
-
-        -- Procedure for changing state after a given time
-        procedure ChangeValue is
-        begin
-            -- Increases counter numbers if flag was set
-            if increase then
-                increase := false;
-                counter(0) := counter(0) + 1;
-
-                for i in 0 to N7seg - 2 loop
-                    if counter(i) > 9 then
-                        counter(i + 1) := counter(i + 1) + 1;
-                        counter(i) := 0;
-                    end if;
-                end loop;
-
-                if counter(N7seg - 1) > 9 then
-                    for i in 0 to N7seg - 1 loop
-                        counter(i) := 0;
-                    end loop;
-                end if;
-            end if;
-
-            if decrease then
-                decrease := false;
-                counter(0) := counter(0) - 1;
-
-                for i in 0 to N7seg - 2 loop
-                    if counter(i) > 9 then
-                        counter(i + 1) := counter(i + 1) - 1;
-                        counter(i) := 9;
-                    end if;
-                end loop;
-
-                if counter(N7seg - 1) > 9 then
-                    for i in 0 to N7seg - 1 loop
-                        counter(i) := 9;
-                    end loop;
-                end if;
-            end if;
-        end procedure;
     begin
     if rising_edge(clk) then
         if startup then
@@ -121,7 +79,13 @@ begin
         end if;
     
 
-        ChangeValue;
+        if increase then 
+            increase := false;
+            ChangeValue(true, counter);
+        elsif decrease then
+            decrease := false;
+            ChangeValue(false, counter);
+        end if;
 
 
     count <= counter;
