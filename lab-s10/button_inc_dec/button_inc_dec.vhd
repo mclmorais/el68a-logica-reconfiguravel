@@ -52,6 +52,47 @@ begin
         variable already_pressed : std_logic;
         variable increase, decrease : boolean := false;
         variable counter : count_number;
+
+        -- Procedure for changing state after a given time
+        procedure ChangeValue is
+        begin
+            -- Increases counter numbers if flag was set
+            if increase then
+                increase := false;
+                counter(0) := counter(0) + 1;
+
+                for i in 0 to N7seg - 2 loop
+                    if counter(i) > 9 then
+                        counter(i + 1) := counter(i + 1) + 1;
+                        counter(i) := 0;
+                    end if;
+                end loop;
+
+                if counter(N7seg - 1) > 9 then
+                    for i in 0 to N7seg - 1 loop
+                        counter(i) := 0;
+                    end loop;
+                end if;
+            end if;
+
+            if decrease then
+                decrease := false;
+                counter(0) := counter(0) - 1;
+
+                for i in 0 to N7seg - 2 loop
+                    if counter(i) > 9 then
+                        counter(i + 1) := counter(i + 1) - 1;
+                        counter(i) := 9;
+                    end if;
+                end loop;
+
+                if counter(N7seg - 1) > 9 then
+                    for i in 0 to N7seg - 1 loop
+                        counter(i) := 9;
+                    end loop;
+                end if;
+            end if;
+        end procedure;
     begin
     if rising_edge(clk) then
         if startup then
@@ -79,42 +120,9 @@ begin
             end if;
         end if;
     
-        -- Increases counter numbers if flag was set
-        if increase then
-            increase := false;
-            counter(0) := counter(0) + 1;
 
-            for i in 0 to N7seg - 2 loop
-                if counter(i) > 9 then
-                    counter(i + 1) := counter(i + 1) + 1;
-                    counter(i) := 0;
-                end if;
-            end loop;
+        ChangeValue;
 
-            if counter(N7seg - 1) > 9 then
-                for i in 0 to N7seg - 1 loop
-                    counter(i) := 0;
-                end loop;
-            end if;
-        end if;
-        
-        if decrease then
-            decrease := false;
-            counter(0) := counter(0) - 1;
-
-            for i in 0 to N7seg - 2 loop
-                if counter(i) > 9 then
-                    counter(i + 1) := counter(i + 1) - 1;
-                    counter(i) := 9;
-                end if;
-            end loop;
-
-            if counter(N7seg - 1) > 9 then
-                for i in 0 to N7seg - 1 loop
-                    counter(i) := 9;
-                end loop;
-            end if;
-        end if;
 
     count <= counter;
     end if;
