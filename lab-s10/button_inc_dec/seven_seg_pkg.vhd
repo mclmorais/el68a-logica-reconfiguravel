@@ -23,7 +23,7 @@ package seven_seg_pkg is
         "0001110"  -- F
     );
     type seven_segment_output is array(integer range <>) of std_logic_vector(6 downto 0);
-    type count_number is array(4 downto 0) of integer range 0 to 10;
+    type count_number is array(integer range <>) of integer range 0 to 10;
 
 
     procedure ChangeValue(increase : in boolean; counter: inout count_number);
@@ -36,15 +36,15 @@ package body seven_seg_pkg is
         if increase then
             counter(0) := counter(0) + 1;
 
-            for i in 0 to 4 - 2 loop
+            for i in 0 to counter'length - 2 loop
                 if counter(i) > 9 then
                     counter(i + 1) := counter(i + 1) + 1;
                     counter(i) := 0;
                 end if;
             end loop;
 
-            if counter(4 - 1) > 9 then
-                for i in 0 to 4 - 1 loop
+            if counter(counter'length - 1) > 9 then
+                for i in 0 to counter'length - 1 loop
                     counter(i) := 0;
                 end loop;
             end if;
@@ -53,15 +53,15 @@ package body seven_seg_pkg is
         if not increase then
             counter(0) := counter(0) - 1;
 
-            for i in 0 to 4 - 2 loop
+            for i in 0 to counter'length - 2 loop
                 if counter(i) > 9 then
                     counter(i + 1) := counter(i + 1) - 1;
                     counter(i) := 9;
                 end if;
             end loop;
 
-            if counter(4 - 1) > 9 then
-                for i in 0 to 4 - 1 loop
+            if counter(counter'length - 1) > 9 then
+                for i in 0 to counter'length - 1 loop
                     counter(i) := 9;
                 end loop;
             end if;

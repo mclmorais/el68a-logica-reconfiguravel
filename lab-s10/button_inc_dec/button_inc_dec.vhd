@@ -19,7 +19,7 @@ entity button_inc_dec is
 end entity button_inc_dec;
 
 architecture a_button_inc_dec of button_inc_dec is
-    signal count : count_number;
+    signal count : count_number(N7Seg - 1 downto 0);
 
     signal debounced_inc : std_logic;
     signal debounced_dec : std_logic;
@@ -50,7 +50,7 @@ begin
         variable startup : boolean := true;
         variable already_pressed : std_logic;
         variable increase, decrease : boolean := false;
-        variable counter : count_number;
+        variable counter : count_number(N7Seg - 1 downto 0);
     begin
     if rising_edge(clk) then
         if startup then
