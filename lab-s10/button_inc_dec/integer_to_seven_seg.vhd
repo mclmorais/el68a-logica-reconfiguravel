@@ -10,24 +10,25 @@ entity integer_to_seven_seg is
         N7Seg : integer := 4
     );
     port (
+        clk         : in std_logic;
         integer_in  : in integer;
-        out_seg     : out seven_segment_output(N7Seg-1 downto 0);
+        out_seg     : out seven_segment_output(N7Seg-1 downto 0)
     );
 end entity integer_to_seven_seg;
 
 architecture a_integer_to_seven_seg of integer_to_seven_seg is
-    type seven_segment_output is array(integer range <>) of std_logic_vector(6 downto 0);
     signal separate_numbers :  seven_segment_output(N7Seg-1 downto 0);
 begin
     
-    process(clk; integer_in)
-        variable calculated_value := integer range 10 downto 0;
+    process(clk, integer_in)
+        variable calculated_value : integer; --range 15 downto 0;
+        variable digit_output : integer range 15 downto 0;
     begin
-        
-        for i in 0 to N7Seg-1 loop
-            calculated_value := (integer_in / 10 ** i) mod 10;
-
-            case calculated_value is
+        calculated_value := integer_in;
+        for i in N7Seg-1 downto 0 loop
+            digit_output := calculated_value / (10 ** i);
+            calculated_value := calculated_value - (digit_output * (10 ** i));
+            case digit_output is
                 when 0 =>
                     separate_numbers(i) <= "1000000";
                 when 1 =>
