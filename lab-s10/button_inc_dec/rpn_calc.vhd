@@ -26,21 +26,23 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
+library work;
+use work.seven_seg_pkg.all;
+
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
 entity rpn_calc is
-    generic(STACK_N     : integer := 7
-    );
-
-  port( btn         : in    std_logic_vector(2 downto 0);
+    generic(STACK_N     : integer := 7; N7Seg : integer := 4);
+  port( btn_inverted : in    std_logic_vector(2 downto 0);
         rst         : in    std_logic;
         enter       : in    std_logic;
         sw_aux      : in    std_logic;
         clk         : in    std_logic;
-        v_output    : out   integer
+        v_output    : out   seven_segment_output(N7Seg-1 downto 0);
+        led_out     : out std_logic_vector(9 downto 0)
   );
 end rpn_calc;
 
@@ -56,7 +58,8 @@ architecture arch_rpn_calc of rpn_calc is
     signal btn_inc : std_logic;
     signal btn_dec : std_logic;
     signal rst_counter : std_logic;
-    signal value_output_s : std_logic_vector(31 downto 0) := x"00000000";
+    signal value_output_s : integer;
+    signal btn : std_logic_vector(2 downto 0);
 
     component button_inc_dec is
         port (
@@ -64,11 +67,28 @@ architecture arch_rpn_calc of rpn_calc is
             button_dec : in  std_logic;
             clk        : in  std_logic;
             rst        : in  std_logic;
-            value_output : out std_logic_vector(31 downto 0)
+            value_output    : out integer
         );
     end component button_inc_dec;
 
+    component integer_to_seven_seg is
+    generic (
+        N7Seg : integer := N7Seg
+    );
+    port (
+        clk         : in std_logic;
+        integer_in  : in integer;
+        out_seg     : out seven_segment_output(N7Seg-1 downto 0)
+    );
+    end component integer_to_seven_seg;
+
+
     begin
+        led_out(9 downto 7) <= btn;
+        led_out(6 downto 4) <= btn_inverted;
+
+
+        btn <= not btn_inverted;
         btn_inc <= sw_aux and btn(2);
         btn_dec <= (not sw_aux) and btn(2);
         inc_dec_device: component button_inc_dec
@@ -79,6 +99,14 @@ architecture arch_rpn_calc of rpn_calc is
             rst             => rst_counter,
             value_output    => value_output_s
         );
+        
+        instance_integer_to_seven_seg : component integer_to_seven_seg
+        port map (
+            clk => clk,
+            integer_in => out_show,
+            out_seg => v_output
+        );
+
         process(clk, rst, sw_aux, btn)
 
         variable estado : integer := 0;
@@ -88,6 +116,8 @@ architecture arch_rpn_calc of rpn_calc is
         variable calc_output : integer;
 
         begin
+            led_out(2 downto 0) <= std_logic_vector(to_unsigned(estado, 3));
+
             btn_aux := sw_aux & btn(1) & btn(0);
             if(rst = '0') then
                 if(rising_edge(clk)) then
@@ -100,21 +130,20 @@ architecture arch_rpn_calc of rpn_calc is
                             rpn_stack(I) <= 0;
                             stack_status(I) <= '0';
                         end loop;
-                        stack_pointer := 0;
                         estado := 1;
                         out_show <= rpn_stack(stack_pointer);
 
                     when 1 =>
-                        rst_counter <= '0';
                         if(btn = "100") then
+                            rst_counter <= '0';
                             estado := 2;
                         elsif(btn = "001" or btn = "010") then
                             estado := 3;
                         end if;
                         out_show <= rpn_stack(stack_pointer);
 
-                    when 2 =>
-                        out_show <= to_integer(unsigned(value_output_s));
+                    when 2 => -- INCREMENTA DECREMENTA
+                        out_show <= value_output_s;
                         if(enter = '1') then
                             stack_pointer := stack_pointer + 1;
                             prev_stack_pointer := prev_stack_pointer + 1;
@@ -124,7 +153,7 @@ architecture arch_rpn_calc of rpn_calc is
                             if (prev_stack_pointer = STACK_N) then
                                 prev_stack_pointer := 0;
                             end if;
-                            rpn_stack(stack_pointer) <= to_integer(unsigned(value_output_s));
+                            rpn_stack(stack_pointer) <= value_output_s;
                             stack_status(stack_pointer) <= '1';
                             rst_counter <= '1';
                             estado := 1;
@@ -138,9 +167,9 @@ architecture arch_rpn_calc of rpn_calc is
                                 when "010" =>
                                     calc_output := rpn_stack(stack_pointer) + rpn_stack(prev_stack_pointer);
                                 when "101" =>
-                                    calc_output := rpn_stack(stack_pointer) / rpn_stack(prev_stack_pointer);
+                                    calc_output := rpn_stack(prev_stack_pointer) / rpn_stack(stack_pointer);
                                 when "110" =>
-                                    calc_output := rpn_stack(stack_pointer) - rpn_stack(prev_stack_pointer);
+                                    calc_output := rpn_stack(prev_stack_pointer) - rpn_stack(stack_pointer);
                                 when others =>
                                     calc_output := 0;
                             end case;
@@ -153,10 +182,10 @@ architecture arch_rpn_calc of rpn_calc is
                                 prev_stack_pointer := prev_stack_pointer - 1;
                             end if;
                         end if;
+                        estado := 1;
                     when others =>
                         estado := 1;
                     end case;
-                    v_output <= out_show;
                 end if;
             else
                 estado := 0;

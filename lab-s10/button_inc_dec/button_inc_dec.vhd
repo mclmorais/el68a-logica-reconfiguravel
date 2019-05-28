@@ -34,17 +34,6 @@ architecture a_button_inc_dec of button_inc_dec is
       );
     end component debounce;
 
-    component integer_to_seven_seg is
-    generic (
-        N7Seg : integer := N7Seg
-    );
-    port (
-        clk         : in std_logic;
-        integer_in  : in integer;
-        out_seg     : out seven_segment_output(N7Seg-1 downto 0)
-    );
-    end component integer_to_seven_seg;
-
 begin
 
     instance_debounce : component debounce
@@ -62,7 +51,7 @@ begin
     --     integer_in => count,
     --     out_seg => display_out
     -- );
-    process(clk)
+    process(clk, rst)
         variable already_pressed : boolean := true;
         variable increase, decrease : boolean := false;
         variable counter : integer := 0;
@@ -71,17 +60,17 @@ begin
             if rising_edge(clk) then
                 -- Sets increase/decrease flag depending on button press
                 if not already_pressed then
-                    if debounced_inc = '0' then
+                    if debounced_inc = '1' then
                         counter := counter + 1;
                         already_pressed := true;
-                    elsif debounced_dec = '0' then
+                    elsif debounced_dec = '1' then
                         counter := counter - 1;
                         already_pressed := true;
                     else
                         already_pressed := false;
                     end if; 
                 else
-                    if debounced_inc = '1' and debounced_dec = '1' then
+                    if debounced_inc = '0' and debounced_dec = '0' then
                         already_pressed := false;
                     end if;
                 end if;
