@@ -7,7 +7,7 @@ use work.seven_seg_pkg.all;
 
 entity integer_to_seven_seg is
     generic (
-        N7Seg : integer := 4
+        N7Seg : integer
     );
     port (
         clk         : in std_logic;

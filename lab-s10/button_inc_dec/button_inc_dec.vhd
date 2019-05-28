@@ -37,7 +37,7 @@ architecture a_button_inc_dec of button_inc_dec is
 
     component integer_to_seven_seg is
     generic (
-        N7Seg : integer := 4
+        N7Seg : integer := N7Seg
     );
     port (
         clk         : in std_logic;
