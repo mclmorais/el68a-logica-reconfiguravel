@@ -21,8 +21,8 @@ architecture a_integer_to_seven_seg of integer_to_seven_seg is
 begin
     
     process(clk, integer_in)
-        variable calculated_value : integer; --range 15 downto 0;
-        variable digit_output : integer range 15 downto 0;
+        variable calculated_value : integer;
+        variable digit_output : integer;-- range 15 downto 0;
     begin
         calculated_value := integer_in;
         for i in N7Seg-1 downto 0 loop

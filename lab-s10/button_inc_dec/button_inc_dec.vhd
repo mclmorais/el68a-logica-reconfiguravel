@@ -11,16 +11,15 @@ entity button_inc_dec is
         N7seg : integer := 4
     );
     port (
-        button_inc : in  std_logic;
-        button_dec : in  std_logic;
-        clk        : in  std_logic;
-        display_out : out seven_segment_output(N7seg-1 downto 0)
+        button_inc      : in  std_logic;
+        button_dec      : in  std_logic;
+        clk             : in  std_logic;
+        rst             : in  std_logic;
+        value_output    : out integer
     );
 end entity button_inc_dec;
 
 architecture a_button_inc_dec of button_inc_dec is
-    signal count : integer;
-
     signal debounced_inc : std_logic;
     signal debounced_dec : std_logic;
 
@@ -57,38 +56,41 @@ begin
         pulse_out(1) => debounced_dec
     );  
 
-    instance_integer_to_seven_seg : component integer_to_seven_seg
-    port map (
-        clk => clk,
-        integer_in => count,
-        out_seg => display_out
-    );
+    -- instance_integer_to_seven_seg : component integer_to_seven_seg
+    -- port map (
+    --     clk => clk,
+    --     integer_in => count,
+    --     out_seg => display_out
+    -- );
     process(clk)
         variable already_pressed : boolean := true;
         variable increase, decrease : boolean := false;
-        variable counter : integer;
+        variable counter : integer := 0;
     begin
-    if rising_edge(clk) then
-
-        -- Sets increase/decrease flag depending on button press
-        if not already_pressed then
-            if debounced_inc = '0' then
-                counter := counter + 1;
-                already_pressed := true;
-            elsif debounced_dec = '0' then
-                counter := counter - 1;
-                already_pressed := true;
-            else
-                already_pressed := false;
-            end if; 
-        else
-            if debounced_inc = '1' and debounced_dec = '1' then
-                already_pressed := false;
+        if rst = '0' then
+            if rising_edge(clk) then
+                -- Sets increase/decrease flag depending on button press
+                if not already_pressed then
+                    if debounced_inc = '0' then
+                        counter := counter + 1;
+                        already_pressed := true;
+                    elsif debounced_dec = '0' then
+                        counter := counter - 1;
+                        already_pressed := true;
+                    else
+                        already_pressed := false;
+                    end if; 
+                else
+                    if debounced_inc = '1' and debounced_dec = '1' then
+                        already_pressed := false;
+                    end if;
+                end if;
+                
+                value_output <= counter;
             end if;
+        else
+            counter := 0;
         end if;
-        
-        count <= counter;
-    end if;
     end process;
 
     -- seg_gen : for i in 0 to N7Seg - 1 generate
