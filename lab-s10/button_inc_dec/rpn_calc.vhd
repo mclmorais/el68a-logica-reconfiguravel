@@ -37,18 +37,17 @@ use work.seven_seg_pkg.all;
 entity rpn_calc is
     generic(STACK_N     : integer := 7; N7Seg : integer := 4);
   port( btn_inverted : in    std_logic_vector(2 downto 0);
-        rst         : in    std_logic;
-        enter       : in    std_logic;
-        sw_aux      : in    std_logic;
+        sw_aux       : in    std_logic_vector(1 downto 0);
         clk         : in    std_logic;
         v_output    : out   seven_segment_output(N7Seg-1 downto 0);
         led_out     : out std_logic_vector(9 downto 0)
   );
 end rpn_calc;
 
--- sw_aux  btn(2)   btn(1)   btn(0)
---   0      INC       +       *
---   1      DEC       -       /
+-- sw_aux   btn(2)   btn(1)   btn(0)
+--   00      +        -        enter
+--   01      *        /        rst
+--   10      INC      DEC      enter
 
 architecture arch_rpn_calc of rpn_calc is
     type int_array is array(STACK_N-1 downto 0) of integer;
@@ -84,13 +83,10 @@ architecture arch_rpn_calc of rpn_calc is
 
 
     begin
-        led_out(9 downto 7) <= btn;
-        led_out(6 downto 4) <= btn_inverted;
-
 
         btn <= not btn_inverted;
-        btn_inc <= sw_aux and btn(2);
-        btn_dec <= (not sw_aux) and btn(2);
+        btn_inc <= btn(2);
+        btn_dec <= btn(1);
         inc_dec_device: component button_inc_dec
         port map(
             button_inc      => btn_inc,
@@ -107,7 +103,7 @@ architecture arch_rpn_calc of rpn_calc is
             out_seg => v_output
         );
 
-        process(clk, rst, sw_aux, btn)
+        process(clk, sw_aux, btn)
 
         variable estado : integer := 0;
         variable stack_pointer : integer; -- stack pointer to indicate the stack position
@@ -116,10 +112,11 @@ architecture arch_rpn_calc of rpn_calc is
         variable calc_output : integer;
 
         begin
-            led_out(2 downto 0) <= std_logic_vector(to_unsigned(estado, 3));
+            led_out(9 downto 7) <= std_logic_vector(to_unsigned(stack_pointer, 3));
+            led_out(6 downto 0) <= stack_status;
 
-            btn_aux := sw_aux & btn(1) & btn(0);
-            if(rst = '0') then
+            btn_aux := sw_aux(0) & btn(2) & btn(1);
+            if(not(sw_aux = "01" and btn(0) = '1')) then
                 if(rising_edge(clk)) then
                 case estado is
                     when 0 =>
@@ -134,17 +131,17 @@ architecture arch_rpn_calc of rpn_calc is
                         out_show <= rpn_stack(stack_pointer);
 
                     when 1 =>
-                        if(btn = "100") then
+                        if((btn = "100" or btn = "010") and sw_aux = "10") then
                             rst_counter <= '0';
                             estado := 2;
-                        elsif(btn = "001" or btn = "010") then
+                        elsif((btn = "100" or btn = "010") and sw_aux(1) = '0') then
                             estado := 3;
                         end if;
                         out_show <= rpn_stack(stack_pointer);
 
                     when 2 => -- INCREMENTA DECREMENTA
                         out_show <= value_output_s;
-                        if(enter = '1') then
+                        if(btn = "001" and (sw_aux(0) = '0')) then
                             stack_pointer := stack_pointer + 1;
                             prev_stack_pointer := prev_stack_pointer + 1;
                             if (stack_pointer = STACK_N) then
@@ -160,15 +157,19 @@ architecture arch_rpn_calc of rpn_calc is
                         end if;
 
                     when 3 =>
+                    -- sw_aux   btn(2)   btn(1)   btn(0)
+                    --   00      +        -        enter
+                    --   01      *        /        rst
+                    --   10      INC      DEC      enter
                         if(stack_status(stack_pointer) = '1' and stack_status(prev_stack_pointer)  = '1') then
                             case btn_aux is
-                                when "001" =>
+                                when "110" =>
                                     calc_output := rpn_stack(stack_pointer) * rpn_stack(prev_stack_pointer);
                                 when "010" =>
                                     calc_output := rpn_stack(stack_pointer) + rpn_stack(prev_stack_pointer);
                                 when "101" =>
                                     calc_output := rpn_stack(prev_stack_pointer) / rpn_stack(stack_pointer);
-                                when "110" =>
+                                when "001" =>
                                     calc_output := rpn_stack(prev_stack_pointer) - rpn_stack(stack_pointer);
                                 when others =>
                                     calc_output := 0;
