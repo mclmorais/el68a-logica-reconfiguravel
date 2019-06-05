@@ -10,7 +10,6 @@ entity controladorPontos is
         estado          : in std_logic;
         saidaAtual      : out integer;
         saidaMaxima     : out integer;
-
     );
 end entity controladorPontos;
 
